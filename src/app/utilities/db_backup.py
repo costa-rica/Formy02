@@ -25,7 +25,7 @@ def _backups_dir() -> Path:
 
 def _postgres_env(extra: dict[str, str] | None = None) -> dict[str, str]:
     env = os.environ.copy()
-    env["PGPASSWORD"] = config.DB_PASSWORD
+    env.pop("PGPASSWORD", None)
     if extra:
         env.update(extra)
     return env

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Generator
 
+from sqlalchemy.engine import URL
 from sqlmodel import SQLModel, Session, create_engine
 
 from src.app.utilities import config
@@ -13,10 +14,12 @@ from src.app.utilities import config
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-DATABASE_URL = (
-    "postgresql+psycopg://"
-    f"{config.DB_USER}:{config.DB_PASSWORD}"
-    f"@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
+DATABASE_URL = URL.create(
+    "postgresql+psycopg",
+    username=config.DB_USER,
+    host=config.DB_HOST,
+    port=int(config.DB_PORT),
+    database=config.DB_NAME,
 )
 
 engine = create_engine(

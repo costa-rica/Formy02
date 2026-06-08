@@ -44,11 +44,10 @@ SMTP must be configured before first admin registration because email verificati
 | `PATH_PROJECT_RESOURCES` | App-managed resources such as database backups. |
 | `AUDIO_FILES_PATH` | Root directory for uploaded audio files. |
 | `HERO_IMAGE_FILENAME` | Filename for the external hero/hello photo under `PATH_PROJECT_RESOURCES/images/`. |
-| `DB_HOST` | PostgreSQL host. |
+| `DB_HOST` | PostgreSQL host; use `127.0.0.1` for the passwordless local trust setup. |
 | `DB_PORT` | PostgreSQL port. |
 | `DB_NAME` | PostgreSQL database name. |
 | `DB_USER` | PostgreSQL user. |
-| `DB_PASSWORD` | PostgreSQL password. |
 | `DB_SCHEMA` | Optional PostgreSQL schema. |
 | `GMAIL_SMTP_USER` | SMTP user for verification/reset email. |
 | `GMAIL_SMTP_APP_PASSWORD` | SMTP app password. |

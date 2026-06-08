@@ -70,7 +70,6 @@ DB_HOST: str = _require("DB_HOST")
 DB_PORT: str = _require("DB_PORT")
 DB_NAME: str = _require("DB_NAME")
 DB_USER: str = _require("DB_USER")
-DB_PASSWORD: str = _require("DB_PASSWORD")
 DB_SCHEMA: str | None = os.getenv("DB_SCHEMA", "").strip() or None
 
 GMAIL_SMTP_USER: str | None = os.getenv("GMAIL_SMTP_USER", "").strip() or None
