@@ -25,6 +25,8 @@ from src.app.utilities.error_handlers import (
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
+PROJECT_RESOURCES_DIR = Path(config.PATH_PROJECT_RESOURCES) if config.PATH_PROJECT_RESOURCES else BASE_DIR / "resources"
+PROJECT_IMAGES_DIR = PROJECT_RESOURCES_DIR / "images"
 
 
 # ---------------------------------------------------------------------------
@@ -55,6 +57,12 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 STATIC_DIR.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+PROJECT_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/resource-images",
+    StaticFiles(directory=str(PROJECT_IMAGES_DIR)),
+    name="resource-images",
+)
 
 # ---------------------------------------------------------------------------
 # Templates (shared instance imported by routes)

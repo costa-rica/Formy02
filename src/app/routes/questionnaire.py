@@ -21,6 +21,7 @@ from src.app.models.question import Question
 from src.app.models.response import Response as QuestionResponse
 from src.app.models.surveyed_person import SurveyedPerson
 from src.app.utilities.audio import save_audio_file
+from src.app.utilities import config
 
 router = APIRouter(tags=["questionnaire"])
 
@@ -46,7 +47,7 @@ async def questionnaire_page(
     return _templates().TemplateResponse(
         request,
         "questionnaire.html",
-        {"questions": questions},
+        {"questions": questions, "hero_image_filename": config.HERO_IMAGE_FILENAME},
     )
 
 

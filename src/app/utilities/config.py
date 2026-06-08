@@ -63,6 +63,7 @@ ALLOWED_ADMIN_EMAILS: set[str] = {
 # ---------------------------------------------------------------------------
 PATH_PROJECT_RESOURCES: str | None = os.getenv("PATH_PROJECT_RESOURCES", "").strip() or None
 AUDIO_FILES_PATH: str | None = os.getenv("AUDIO_FILES_PATH", "").strip() or None
+HERO_IMAGE_FILENAME: str = os.getenv("HERO_IMAGE_FILENAME", "hello_picture.jpg").strip() or "hello_picture.jpg"
 
 # Database — PostgreSQL
 DB_HOST: str = _require("DB_HOST")

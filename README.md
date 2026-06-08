@@ -43,6 +43,7 @@ SMTP must be configured before first admin registration because email verificati
 | `EMAIL_ADMIN_USER` | Comma-separated admin registration whitelist. |
 | `PATH_PROJECT_RESOURCES` | App-managed resources such as database backups. |
 | `AUDIO_FILES_PATH` | Root directory for uploaded audio files. |
+| `HERO_IMAGE_FILENAME` | Filename for the external hero/hello photo under `PATH_PROJECT_RESOURCES/images/`. |
 | `DB_HOST` | PostgreSQL host. |
 | `DB_PORT` | PostgreSQL port. |
 | `DB_NAME` | PostgreSQL database name. |
