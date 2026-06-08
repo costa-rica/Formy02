@@ -43,7 +43,7 @@
               <div class="choice-list">
                 <button
                   class="btn-outline btn-sm"
-                  onclick="openEditModal({{ q.id }}, {{ q.question | tojson }}, '{{ q.type }}', {{ q.is_active | lower }}, {{ q.allows_for_audio | lower }}, {{ (q.options or []) | tojson }})"
+                  onclick='openEditModal({{ q.id }}, {{ q.question | tojson }}, {{ q.type | tojson }}, {{ q.is_active | lower }}, {{ q.allows_for_audio | lower }}, {{ (q.options or []) | tojson }})'
                 >Edit</button>
                 <button class="btn-outline btn-sm" onclick="deleteQuestion({{ q.id }})">Delete</button>
               </div>
