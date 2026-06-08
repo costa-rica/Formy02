@@ -5,6 +5,7 @@ PostgreSQL backup and restore utilities.
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import tempfile
 from datetime import datetime
@@ -15,6 +16,21 @@ from loguru import logger
 from src.app.utilities import config
 
 
+SYSTEM_BIN_DIRS = ("/usr/local/bin", "/usr/bin", "/bin")
+POSTGRES_BIN_PATHS = {
+    "pg_dump": (
+        "/usr/bin/pg_dump",
+        "/usr/local/bin/pg_dump",
+        "/opt/homebrew/bin/pg_dump",
+    ),
+    "pg_restore": (
+        "/usr/bin/pg_restore",
+        "/usr/local/bin/pg_restore",
+        "/opt/homebrew/bin/pg_restore",
+    ),
+}
+
+
 def _backups_dir() -> Path:
     if not config.PATH_PROJECT_RESOURCES:
         raise RuntimeError("PATH_PROJECT_RESOURCES is not configured.")
@@ -23,19 +39,44 @@ def _backups_dir() -> Path:
     return backups_dir
 
 
+def _with_system_bin_dirs(path: str | None) -> str:
+    parts = [part for part in (path or "").split(os.pathsep) if part]
+    for bin_dir in SYSTEM_BIN_DIRS:
+        if bin_dir not in parts:
+            parts.append(bin_dir)
+    return os.pathsep.join(parts)
+
+
 def _postgres_env(extra: dict[str, str] | None = None) -> dict[str, str]:
     env = os.environ.copy()
     env.pop("PGPASSWORD", None)
+    env["PATH"] = _with_system_bin_dirs(env.get("PATH"))
     if extra:
         env.update(extra)
     return env
+
+
+def _postgres_client_path(executable: str) -> str:
+    search_path = _with_system_bin_dirs(os.environ.get("PATH"))
+    resolved = shutil.which(executable, path=search_path)
+    if resolved:
+        return resolved
+
+    for candidate in POSTGRES_BIN_PATHS.get(executable, ()):
+        if Path(candidate).is_file() and os.access(candidate, os.X_OK):
+            return candidate
+
+    raise RuntimeError(
+        f"{executable} was not found. Install PostgreSQL client tools or add "
+        f"{executable} to PATH."
+    )
 
 
 def create_backup() -> Path:
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     dump_path = _backups_dir() / f"backup_{timestamp}.dump"
     cmd = [
-        "pg_dump",
+        _postgres_client_path("pg_dump"),
         "--format=custom",
         "--no-owner",
         "--no-privileges",
@@ -96,7 +137,7 @@ def restore_backup(dump_bytes: bytes) -> None:
             tmp_path = tmp.name
 
         cmd = [
-            "pg_restore",
+            _postgres_client_path("pg_restore"),
             "--clean",
             "--if-exists",
             "--no-owner",
