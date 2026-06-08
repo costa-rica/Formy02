@@ -104,8 +104,57 @@
     @apply bg-raised border border-subtle rounded-2xl shadow-sm;
   }
 
+  .card-pad {
+    @apply p-5 sm:p-6 lg:p-8;
+  }
+
+  .hero {
+    @apply mb-8 grid items-center gap-6 rounded-2xl border border-subtle bg-raised p-5 shadow-sm sm:p-6 md:grid-cols-[minmax(0,1fr)_auto] lg:p-8;
+  }
+
+  .hero-photo {
+    @apply w-full max-w-56 justify-self-center rounded-lg object-cover shadow-md md:max-w-64 md:justify-self-end;
+    aspect-ratio: 4 / 5;
+  }
+
+  .page-title {
+    @apply m-0 max-w-3xl text-4xl leading-tight sm:text-5xl;
+  }
+
+  .page-copy {
+    @apply m-0 max-w-2xl text-base leading-7 text-ink-muted sm:text-lg;
+  }
+
+  .muted {
+    @apply text-sm leading-6 text-ink-muted;
+  }
+
+  .stack {
+    @apply flex flex-col gap-4;
+  }
+
+  .stack-lg {
+    @apply flex flex-col gap-6 sm:gap-8;
+  }
+
+  .form-grid {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .form-row {
+    @apply flex flex-col gap-2;
+  }
+
+  .form-label {
+    @apply text-sm font-semibold text-ink;
+  }
+
   .input-field {
-    @apply bg-inset border border-subtle text-ink placeholder:text-ink-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+    @apply w-full rounded-lg border border-subtle bg-inset px-3 py-2.5 text-ink placeholder:text-ink-muted focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500;
+  }
+
+  textarea.input-field {
+    @apply min-h-28 resize-y;
   }
 
   .btn-primary {
@@ -120,7 +169,137 @@
     @apply inline-flex items-center justify-center rounded-lg border border-strong px-4 py-2 font-semibold text-ink transition-colors hover:bg-raised focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
+  .btn-danger {
+    @apply inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-sm {
+    @apply min-h-9 px-3 py-1.5 text-sm;
+  }
+
+  .btn-full {
+    @apply w-full;
+  }
+
   .section-heading {
     @apply font-display text-ink;
+  }
+
+  .question-card {
+    @apply flex flex-col gap-4 p-5 sm:p-6;
+  }
+
+  .question-title {
+    @apply m-0 text-base font-semibold leading-7 text-ink sm:text-lg;
+  }
+
+  .choice-list {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .choice-item {
+    @apply inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-subtle bg-inset px-3 py-2 text-sm font-medium text-ink transition-colors hover:bg-raised;
+  }
+
+  .choice-item input {
+    @apply h-4 w-4 accent-primary-600;
+  }
+
+  .submit-row {
+    @apply flex justify-end;
+  }
+
+  .help-text {
+    @apply text-sm leading-6 text-ink-muted;
+  }
+
+  .alert {
+    @apply rounded-lg border px-4 py-3 text-sm leading-6;
+  }
+
+  .alert-danger {
+    @apply border-red-200 bg-red-50 text-red-800 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-200;
+  }
+
+  .alert-success {
+    @apply border-green-200 bg-green-50 text-green-800 dark:border-green-900/70 dark:bg-green-950/40 dark:text-green-200;
+  }
+
+  .badge {
+    @apply inline-flex w-fit items-center rounded-lg border border-subtle bg-inset px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink-muted;
+  }
+
+  .badge-success {
+    @apply border-green-200 bg-green-50 text-green-700 dark:border-green-900/70 dark:bg-green-950/40 dark:text-green-200;
+  }
+
+  .badge-muted {
+    @apply text-ink-muted;
+  }
+
+  .admin-grid,
+  .two-grid {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  .table-wrap {
+    @apply overflow-x-auto rounded-lg border border-subtle bg-raised;
+  }
+
+  .data-table {
+    @apply min-w-full border-collapse text-left text-sm;
+  }
+
+  .data-table th {
+    @apply border-b border-subtle bg-inset px-4 py-3 font-semibold text-ink;
+  }
+
+  .data-table td {
+    @apply border-b border-subtle px-4 py-3 align-top text-ink;
+  }
+
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .modal-backdrop {
+    @apply fixed inset-0 z-50 hidden items-center justify-center bg-calm-950/60 p-4;
+  }
+
+  .modal-backdrop.open {
+    @apply flex;
+  }
+
+  .modal-panel {
+    @apply max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-subtle bg-overlay shadow-xl;
+  }
+
+  .modal-head,
+  .modal-foot {
+    @apply flex items-center justify-between gap-3 border-subtle p-4 sm:p-5;
+  }
+
+  .modal-head {
+    @apply border-b;
+  }
+
+  .modal-foot {
+    @apply border-t;
+  }
+
+  .modal-body {
+    @apply max-h-[65vh] overflow-y-auto p-4 sm:p-5;
+  }
+
+  .audio-recorder {
+    @apply flex flex-col gap-3 rounded-lg border border-subtle bg-inset p-3;
+  }
+
+  .audio-controls {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .playback-audio {
+    @apply w-full;
   }
 }
