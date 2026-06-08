@@ -4,7 +4,7 @@ Formy02 is a FastAPI/Jinja questionnaire app based on the original Formy backend
 
 ## Prerequisites
 
-- Python 3.13
+- Python 3.12
 - PostgreSQL with a Formy02 database and user
 - `pg_dump` and `pg_restore` available in `PATH`
 - Node.js and npm for the Tailwind CLI path used here
@@ -12,14 +12,14 @@ Formy02 is a FastAPI/Jinja questionnaire app based on the original Formy backend
 ## Setup
 
 1. Clone the repo.
-2. Create and activate the venv: `python -m venv venv && source venv/bin/activate`.
+2. Create and activate the external venv: `mkdir -p /home/limited_user/environments && python3.12 -m venv /home/limited_user/environments/formy02 && source /home/limited_user/environments/formy02/bin/activate`.
 3. Install dependencies: `pip install -r requirements.txt`.
 4. Install Tailwind tooling: `npm install`.
 5. Copy `.env.example` to `.env` and fill in required values.
 6. Build CSS: `npm run build:css`.
 7. Run development server: `uvicorn src.app.main:app --reload`.
 
-Production can run with `RUN_ENVIRONMENT=production uvicorn src.app.main:app --host 0.0.0.0 --port 8000`. Configure `PATH_TO_LOGS` before production startup.
+Production can run with `RUN_ENVIRONMENT=production /home/limited_user/environments/formy02/bin/uvicorn src.app.main:app --host 0.0.0.0 --port 8000`. Configure `PATH_TO_LOGS` before production startup.
 
 The checked-in `src/app/static/app.css` is present for convenience, but regenerate it with `npm run build:css` after changing templates or `src/styles/tailwind.css`.
 

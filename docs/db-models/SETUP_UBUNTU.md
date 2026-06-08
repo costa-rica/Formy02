@@ -37,7 +37,7 @@ Requires=postgresql.service
 [Service]
 WorkingDirectory=/opt/formy02
 EnvironmentFile=/opt/formy02/.env
-ExecStart=/opt/formy02/venv/bin/uvicorn src.app.main:app --host 0.0.0.0 --port 8000
+ExecStart=/home/limited_user/environments/formy02/bin/uvicorn src.app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 
 [Install]

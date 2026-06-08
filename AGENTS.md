@@ -4,7 +4,7 @@ This file provides guidance to agent / engineers when working with code in this 
 
 ## Python
 
-When running Python, use the venv in the project. Do not use the system environment. Before running Python commands, verify the active interpreter with `which python` and `python --version`.
+When running Python, use the shared application venv at `/home/limited_user/environments/formy02`. Do not use the system environment or create a project-local `venv`. Before running Python commands, verify the active interpreter with `which python` and `python --version`.
 
 ## Creating Markdown Files in docs/
 
