@@ -35,6 +35,71 @@
 }
 
 @layer components {
+  .page-bg {
+    @apply flex min-h-screen flex-col bg-canvas text-ink;
+  }
+
+  .shell {
+    @apply mx-auto w-full max-w-app px-4 sm:px-6 lg:px-8;
+  }
+
+  .site-header {
+    @apply sticky top-0 z-40 border-b border-subtle bg-raised/95 shadow-sm backdrop-blur;
+  }
+
+  .header-inner {
+    @apply flex min-h-16 items-center justify-between gap-4;
+  }
+
+  .brand {
+    @apply inline-flex items-center font-display text-lg font-semibold text-ink transition-colors hover:text-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-raised dark:hover:text-primary-300;
+  }
+
+  .nav-actions {
+    @apply flex flex-wrap items-center justify-end gap-2;
+  }
+
+  .nav-link {
+    @apply inline-flex min-h-10 items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold text-ink-muted transition-colors hover:bg-inset hover:text-ink focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-raised;
+  }
+
+  .logout-form {
+    @apply m-0;
+  }
+
+  .nav-button {
+    @apply cursor-pointer border-0 bg-transparent;
+    font: inherit;
+  }
+
+  .theme-toggle {
+    @apply inline-flex min-h-10 items-center justify-center rounded-lg border border-subtle bg-inset px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-raised focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-raised;
+  }
+
+  .theme-dark {
+    @apply hidden;
+  }
+
+  .dark .theme-light {
+    @apply hidden;
+  }
+
+  .dark .theme-dark {
+    @apply inline;
+  }
+
+  .main-shell {
+    @apply flex-1 py-8 sm:py-10;
+  }
+
+  .site-footer {
+    @apply mt-auto border-t border-subtle bg-raised/80 text-sm text-ink-muted;
+  }
+
+  .footer-inner {
+    @apply flex flex-col gap-2 py-6 sm:flex-row sm:items-center sm:justify-between;
+  }
+
   .card {
     @apply bg-raised border border-subtle rounded-2xl shadow-sm;
   }
