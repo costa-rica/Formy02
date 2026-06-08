@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Register - Formy02{% endblock %}
+
+{% block content %}
+<section class="card card-pad stack" style="max-width: 560px; margin: 2rem auto;">
+  <div>
+    <h1 class="section-heading" style="font-size: 2rem; margin: 0;">Create an account</h1>
+    <p class="muted">Registration is limited to whitelisted admin email addresses.</p>
+  </div>
+
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+  {% if success %}<div class="alert alert-success">{{ success }}</div>{% endif %}
+
+  <form method="post" action="/register" class="stack">
+    <div class="form-row">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" id="username" name="username" class="input-field" required autofocus />
+    </div>
+    <div class="form-row">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" id="email" name="email" class="input-field" required />
+    </div>
+    <div class="form-row">
+      <label for="password" class="form-label">Password</label>
+      <div style="display: flex; gap: .5rem;">
+        <input type="password" id="password" name="password" class="input-field" required minlength="4" />
+        <button type="button" class="btn-outline" onclick="togglePassword('password', this)" tabindex="-1">Show</button>
+      </div>
+      <span class="help-text">Minimum 4 characters.</span>
+    </div>
+    <button type="submit" class="btn-primary btn-full">Register</button>
+  </form>
+
+  <p class="muted" style="text-align: center;">Already have an account? <a href="/login">Sign in</a></p>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function togglePassword(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
+</script>
+{% endblock %}

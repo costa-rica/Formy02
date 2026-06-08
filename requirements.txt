@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sqlmodel
+python-dotenv
+loguru
+python-jose[cryptography]
+itsdangerous
+aiofiles
+bcrypt
+psycopg[binary]

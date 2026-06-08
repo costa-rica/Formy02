@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Responses - Formy02 Admin{% endblock %}
+
+{% block content %}
+<div class="stack-lg">
+  <div>
+    <h1 class="section-heading" style="font-size: 2.4rem; margin: 0;">Responses</h1>
+    <p class="muted">Review questionnaire submissions and recordings.</p>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Questions</th>
+          <th>Updated At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for person in people %}
+        {% set summary = summaries[person.id] %}
+        <tr id="person-row-{{ person.id }}">
+          <td>{{ person.id }}</td>
+          <td>{{ person.name or "-" }}</td>
+          <td>{{ person.email or "-" }}</td>
+          <td>{{ person.phone or "-" }}</td>
+          <td>
+            {% if summary.count > 0 %}
+            <a href="#" class="badge" onclick="loadDetail({{ person.id }}); return false;">{{ summary.count }}</a>
+            {% else %}
+            <span class="badge badge-muted">0</span>
+            {% endif %}
+          </td>
+          <td>{{ summary.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            <button
+              type="button"
+              class="btn-outline btn-sm"
+              data-person-id="{{ person.id }}"
+              onclick="deletePerson({{ person.id }})"
+            >Delete</button>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align: center;" class="muted">No responses yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <h2 class="section-heading" id="modalTitle" style="font-size: 1.25rem; margin: 0;">Responses</h2>
+        <small class="muted" id="modalUpdatedAt"></small>
+      </div>
+      <button type="button" class="btn-outline btn-sm" onclick="closeDetailModal()">Close</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <p class="muted">Loading...</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function loadDetail(personId) {
+  const modal = document.getElementById('detailModal');
+  document.getElementById('modalBody').innerHTML = '<p class="muted">Loading...</p>';
+  modal.classList.add('open');
+
+  try {
+    const res = await fetch(`/admin/responses/${personId}/detail`);
+    if (!res.ok) throw new Error('Failed to load responses.');
+    const data = await res.json();
+
+    const person = data.person;
+    document.getElementById('modalTitle').textContent =
+      `Responses - ${person.name || 'Person #' + person.id}`;
+    document.getElementById('modalUpdatedAt').textContent =
+      `Last updated: ${new Date(data.updated_at).toLocaleString()}`;
+
+    let html = '';
+    if (data.responses.length === 0) {
+      html = '<p class="muted">No responses recorded.</p>';
+    } else {
+      data.responses.forEach(item => {
+        html += `<div class="stack" style="border-bottom: 1px solid rgb(var(--border-subtle)); padding-bottom: 1rem; margin-bottom: 1rem;">
+          <p style="font-weight: 750; margin: 0;">${escapeHtml(item.question)}</p>
+          <p style="margin: 0;">${escapeHtml(item.response || '-')}</p>`;
+
+        if (item.audio_path) {
+          html += `<audio controls class="playback-audio">
+            <source src="/admin/audio/${encodeURIComponent(item.audio_path)}">
+            Your browser does not support audio playback.
+          </audio>`;
+        }
+
+        html += `</div>`;
+      });
+    }
+
+    document.getElementById('modalBody').innerHTML = html;
+  } catch (err) {
+    document.getElementById('modalBody').innerHTML =
+      `<div class="alert alert-danger">${err.message}</div>`;
+  }
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('open');
+}
+
+async function deletePerson(personId) {
+  const ok = confirm('Delete this person and all related responses? This cannot be undone.');
+  if (!ok) return;
+
+  try {
+    const res = await fetch(`/admin/responses/${personId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete responses.');
+    document.getElementById(`person-row-${personId}`)?.remove();
+  } catch (err) {
+    alert(err.message || 'Delete failed.');
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+{% endblock %}

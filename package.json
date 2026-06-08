@@ -1,0 +1,10 @@
+{
+  "name": "formy02",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i src/styles/tailwind.css -o src/app/static/app.css"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

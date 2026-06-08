@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Admin - Formy02{% endblock %}
+
+{% block content %}
+<div class="stack-lg">
+  <div>
+    <h1 class="section-heading" style="font-size: 2.4rem; margin: 0;">Admin</h1>
+    <p class="muted">Manage questions, responses, and PostgreSQL backups.</p>
+  </div>
+
+  <section class="admin-grid">
+    <a href="/admin/questions" class="card card-pad stack" style="text-decoration: none;">
+      <span class="badge">Questions</span>
+      <strong>Create and manage survey questions</strong>
+      <span class="muted">Edit active questions, answer types, choices, and audio settings.</span>
+    </a>
+    <a href="/admin/responses" class="card card-pad stack" style="text-decoration: none;">
+      <span class="badge">Responses</span>
+      <strong>View surveyed person responses</strong>
+      <span class="muted">Review submitted answers and audio recordings.</span>
+    </a>
+  </section>
+
+  <section class="card card-pad stack-lg">
+    <div>
+      <h2 class="section-heading" style="margin: 0;">Database Management</h2>
+      <p class="muted">Create and restore pg_dump custom-format archive (.dump) files.</p>
+    </div>
+
+    <div class="two-grid">
+      <div class="stack">
+        <h3 class="section-heading" style="font-size: 1.15rem; margin: 0;">Create Backup</h3>
+        <p class="muted">
+          Creates a pg_dump custom-format archive (.dump) and stores it in the
+          <code>backups_db</code> folder.
+        </p>
+        <button id="backupBtn" class="btn-primary" onclick="createBackup()">Create Backup Now</button>
+        <div id="backupMsg" class="help-text"></div>
+      </div>
+
+      <div class="stack">
+        <h3 class="section-heading" style="font-size: 1.15rem; margin: 0;">Restore from Backup</h3>
+        <p class="muted">
+          Upload a pg_dump custom-format archive (.dump).
+          <strong>This will erase all current data.</strong>
+        </p>
+        <div class="stack">
+          <input type="file" id="restoreFile" class="input-field" accept=".dump" />
+          <button class="btn-danger" type="button" onclick="confirmRestore()">Restore</button>
+        </div>
+        <div id="restoreMsg" class="help-text"></div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <h3 class="section-heading" style="font-size: 1.15rem; margin: 0;">Saved Backups</h3>
+      {% if backups %}
+      <div class="table-wrap">
+        <table class="data-table" id="backupsTable">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Size</th>
+              <th>Created (UTC)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in backups %}
+            <tr id="backup-row-{{ loop.index }}">
+              <td><a href="/admin/db/backups/{{ b.name }}">{{ b.name }}</a></td>
+              <td class="muted">{{ b.size_kb }} KB</td>
+              <td class="muted">{{ b.modified }}</td>
+              <td style="text-align: right;">
+                <button class="btn-outline btn-sm" onclick="deleteBackup('{{ b.name }}', 'backup-row-{{ loop.index }}')">Delete</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="muted" id="noBackupsMsg">No backups found.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="restoreModal" role="dialog" aria-modal="true" aria-labelledby="restoreTitle">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <h2 id="restoreTitle" class="section-heading" style="font-size: 1.25rem; margin: 0;">Confirm Restore</h2>
+      <button type="button" class="btn-outline btn-sm" onclick="closeRestoreModal()">Close</button>
+    </div>
+    <div class="modal-body stack">
+      <p>
+        Restoring from a backup will <strong>permanently erase all current data</strong>
+        and replace it with the contents of the selected file.
+      </p>
+      <p class="muted" id="restoreFilename"></p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-outline" onclick="closeRestoreModal()">Cancel</button>
+      <button type="button" class="btn-danger" id="confirmRestoreBtn" onclick="doRestore()">Yes, restore database</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function createBackup() {
+  const btn = document.getElementById('backupBtn');
+  const msg = document.getElementById('backupMsg');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+  msg.textContent = '';
+
+  try {
+    const res = await fetch('/admin/db/backup', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      msg.textContent = `Backup created: ${data.filename}`;
+      setTimeout(() => window.location.reload(), 1200);
+    } else {
+      msg.textContent = `Error: ${data.detail || 'Backup failed.'}`;
+    }
+  } catch (err) {
+    msg.textContent = `Network error: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Backup Now';
+  }
+}
+
+function confirmRestore() {
+  const fileInput = document.getElementById('restoreFile');
+  if (!fileInput.files || !fileInput.files[0]) {
+    document.getElementById('restoreMsg').textContent = 'Please select a backup file first.';
+    return;
+  }
+  document.getElementById('restoreFilename').textContent = 'File: ' + fileInput.files[0].name;
+  document.getElementById('restoreModal').classList.add('open');
+}
+
+function closeRestoreModal() {
+  document.getElementById('restoreModal').classList.remove('open');
+}
+
+async function doRestore() {
+  const fileInput = document.getElementById('restoreFile');
+  const confirmBtn = document.getElementById('confirmRestoreBtn');
+  const msg = document.getElementById('restoreMsg');
+
+  closeRestoreModal();
+  confirmBtn.disabled = true;
+  msg.textContent = 'Restoring...';
+
+  const formData = new FormData();
+  formData.append('backup_file', fileInput.files[0]);
+
+  try {
+    const res = await fetch('/admin/db/restore', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      msg.textContent = 'Database restored successfully.';
+    } else {
+      msg.textContent = `Error: ${data.detail || 'Restore failed.'}`;
+    }
+  } catch (err) {
+    msg.textContent = `Network error: ${err.message}`;
+  } finally {
+    confirmBtn.disabled = false;
+  }
+}
+
+async function deleteBackup(filename, rowId) {
+  if (!confirm(`Delete backup "${filename}"?`)) return;
+  const res = await fetch(`/admin/db/backups/${encodeURIComponent(filename)}`, {
+    method: 'DELETE',
+  });
+  if (res.ok) {
+    const row = document.getElementById(rowId);
+    if (row) row.remove();
+    const tbody = document.querySelector('#backupsTable tbody');
+    if (tbody && tbody.querySelectorAll('tr').length === 0) {
+      document.getElementById('backupsTable')?.closest('.table-wrap')?.remove();
+      const noMsg = document.getElementById('noBackupsMsg');
+      if (!noMsg) {
+        const p = document.createElement('p');
+        p.id = 'noBackupsMsg';
+        p.className = 'muted';
+        p.textContent = 'No backups found.';
+        document.querySelector('#backupsTable')?.parentElement?.appendChild(p);
+      }
+    }
+  } else {
+    alert('Could not delete backup.');
+  }
+}
+</script>
+{% endblock %}

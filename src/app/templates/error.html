@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Error - Formy02{% endblock %}
+
+{% block content %}
+<section class="card card-pad stack" style="max-width: 680px; margin: 3rem auto;">
+  <span class="badge">{{ code }}</span>
+  <h1 class="section-heading" style="font-size: 2.25rem; margin: 0;">Something needs attention</h1>
+  <p class="page-copy">{{ message }}</p>
+  <p class="muted">Status {{ status }}</p>
+  <div>
+    <a href="/" class="btn-outline">Return to questionnaire</a>
+  </div>
+</section>
+{% endblock %}

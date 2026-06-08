@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Questions - Formy02 Admin{% endblock %}
+
+{% block content %}
+<div class="stack-lg">
+  <div>
+    <h1 class="section-heading" style="font-size: 2.4rem; margin: 0;">Questions</h1>
+    <p class="muted">Create, sort, search, edit, and delete questionnaire prompts.</p>
+  </div>
+
+  <section class="card card-pad stack">
+    <div style="display: flex; justify-content: space-between; gap: 1rem; align-items: center;">
+      <h2 class="section-heading" style="font-size: 1.25rem; margin: 0;">All Questions ({{ questions | length }})</h2>
+      <span class="muted">Click column headings to sort.</span>
+    </div>
+    <input type="text" id="searchInput" class="input-field" placeholder="Search questions..." />
+
+    <div class="table-wrap">
+      <table class="data-table" id="questionsTable">
+        <thead>
+          <tr>
+            <th class="sortable" data-col="0" style="cursor:pointer;">ID</th>
+            <th class="sortable" data-col="1" style="cursor:pointer;">Question</th>
+            <th class="sortable" data-col="2" style="cursor:pointer;">Type</th>
+            <th class="sortable" data-col="3" style="cursor:pointer;">Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in questions %}
+          <tr id="row-{{ q.id }}">
+            <td>{{ q.id }}</td>
+            <td class="col-question">{{ q.question }}</td>
+            <td>{{ q.type }}</td>
+            <td>
+              {% if q.is_active %}
+                <span class="badge badge-success">Yes</span>
+              {% else %}
+                <span class="badge badge-muted">No</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="choice-list">
+                <button
+                  class="btn-outline btn-sm"
+                  onclick="openEditModal({{ q.id }}, {{ q.question | tojson }}, '{{ q.type }}', {{ q.is_active | lower }}, {{ q.allows_for_audio | lower }}, {{ (q.options or []) | tojson }})"
+                >Edit</button>
+                <button class="btn-outline btn-sm" onclick="deleteQuestion({{ q.id }})">Delete</button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align: center;" class="muted">No questions yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card card-pad stack">
+    <h2 class="section-heading" style="font-size: 1.25rem; margin: 0;">Add New Question</h2>
+    <form method="post" action="/admin/questions" class="stack">
+      <div class="form-row">
+        <label for="question" class="form-label">Question</label>
+        <textarea id="question" name="question" class="input-field" rows="3" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <label for="type" class="form-label">Type</label>
+        <select id="type" name="type" class="input-field" onchange="toggleOptions(this.value)">
+          <option value="text">Text</option>
+          <option value="yes_no">Yes / No</option>
+          <option value="multiple_choice">Multiple Choice</option>
+        </select>
+      </div>
+
+      <div class="form-row hidden" id="optionsGroup">
+        <label for="options" class="form-label">Options (one per line)</label>
+        <textarea id="options" name="options" class="input-field" rows="4" placeholder="Option A&#10;Option B&#10;Option C"></textarea>
+      </div>
+
+      <label class="choice-item" for="is_active">
+        <input type="checkbox" id="is_active" name="is_active" value="true" checked />
+        <span>Active</span>
+      </label>
+
+      <label class="choice-item" for="allows_for_audio">
+        <input type="checkbox" id="allows_for_audio" name="allows_for_audio" value="true" checked />
+        <span>Allow audio response</span>
+      </label>
+
+      <div>
+        <button type="submit" class="btn-primary">Create Question</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="editModal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <h2 class="section-heading" id="editTitle" style="font-size: 1.25rem; margin: 0;">Edit Question</h2>
+      <button type="button" class="btn-outline btn-sm" onclick="closeEditModal()">Close</button>
+    </div>
+    <div class="modal-body stack">
+      <input type="hidden" id="editId" />
+      <div class="form-row">
+        <label class="form-label" for="editQuestion">Question</label>
+        <textarea id="editQuestion" class="input-field" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <label class="form-label" for="editType">Type</label>
+        <select id="editType" class="input-field" onchange="toggleEditOptions(this.value)">
+          <option value="text">Text</option>
+          <option value="yes_no">Yes / No</option>
+          <option value="multiple_choice">Multiple Choice</option>
+        </select>
+      </div>
+      <div class="form-row hidden" id="editOptionsGroup">
+        <label class="form-label" for="editOptions">Options (one per line)</label>
+        <textarea id="editOptions" class="input-field" rows="4"></textarea>
+      </div>
+      <label class="choice-item" for="editIsActive">
+        <input type="checkbox" id="editIsActive" />
+        <span>Active</span>
+      </label>
+      <label class="choice-item" for="editAllowsAudio">
+        <input type="checkbox" id="editAllowsAudio" />
+        <span>Allow audio response</span>
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button type="button" class="btn-primary" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('searchInput').addEventListener('input', function () {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('#questionsTable tbody tr[id]').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+  });
+});
+
+let sortState = { col: null, asc: true };
+document.querySelectorAll('.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = parseInt(th.dataset.col);
+    sortState.asc = sortState.col === col ? !sortState.asc : true;
+    sortState.col = col;
+    const tbody = document.querySelector('#questionsTable tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr[id]'));
+    rows.sort((a, b) => {
+      const aText = a.cells[col]?.textContent.trim() ?? '';
+      const bText = b.cells[col]?.textContent.trim() ?? '';
+      return sortState.asc
+        ? aText.localeCompare(bText, undefined, { numeric: true })
+        : bText.localeCompare(aText, undefined, { numeric: true });
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  });
+});
+
+function toggleOptions(type) {
+  document.getElementById('optionsGroup').classList.toggle('hidden', type !== 'multiple_choice');
+}
+
+function openEditModal(id, question, type, isActive, allowsAudio, options) {
+  document.getElementById('editId').value = id;
+  document.getElementById('editQuestion').value = question;
+  document.getElementById('editType').value = type;
+  document.getElementById('editIsActive').checked = isActive;
+  document.getElementById('editAllowsAudio').checked = allowsAudio;
+  document.getElementById('editOptions').value = (options || []).join('\n');
+  toggleEditOptions(type);
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+function toggleEditOptions(type) {
+  document.getElementById('editOptionsGroup').classList.toggle('hidden', type !== 'multiple_choice');
+}
+
+async function saveEdit() {
+  const id = document.getElementById('editId').value;
+  const type = document.getElementById('editType').value;
+  const optionsRaw = document.getElementById('editOptions').value;
+  const options = type === 'multiple_choice'
+    ? optionsRaw.split('\n').map(s => s.trim()).filter(Boolean)
+    : null;
+
+  const body = {
+    question: document.getElementById('editQuestion').value,
+    type,
+    is_active: document.getElementById('editIsActive').checked,
+    allows_for_audio: document.getElementById('editAllowsAudio').checked,
+    options,
+  };
+
+  const res = await fetch(`/admin/questions/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (res.ok) {
+    window.location.reload();
+  } else {
+    alert('Failed to update question.');
+  }
+}
+
+async function deleteQuestion(id) {
+  if (!confirm('Delete this question? This cannot be undone.')) return;
+  const res = await fetch(`/admin/questions/${id}`, { method: 'DELETE' });
+  if (res.ok) {
+    document.getElementById(`row-${id}`)?.remove();
+  } else {
+    alert('Failed to delete question.');
+  }
+}
+</script>
+{% endblock %}

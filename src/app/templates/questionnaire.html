@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Questionnaire - Formy02{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="stack">
+    <p class="muted">All questions are optional.</p>
+    <h1 class="page-title section-heading">A few thoughtful questions <span class="wave">~</span></h1>
+    <p class="page-copy">
+      Share only what feels useful. Your answers help shape a calmer GoLightly experience,
+      and contact details are optional.
+    </p>
+  </div>
+  <img
+    class="hero-photo"
+    src="/static/images/waving_placeholder.png"
+    alt="Waving photo placeholder"
+  />
+</section>
+
+<form method="post" action="/submit" enctype="multipart/form-data" id="questionnaireForm" class="stack-lg">
+  <section class="card card-pad stack">
+    <div>
+      <h2 class="section-heading">Your information</h2>
+      <p class="muted">Optional, used only if follow-up is needed.</p>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" id="name" name="name" class="input-field" />
+      </div>
+      <div class="form-row">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" id="email" name="email" class="input-field" />
+      </div>
+      <div class="form-row">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="tel" id="phone" name="phone" class="input-field" />
+      </div>
+    </div>
+  </section>
+
+  {% for q in questions %}
+  <section class="card question-card">
+    <p class="question-title">{{ loop.index }}. {{ q.question }}</p>
+
+    {% if q.type == "yes_no" %}
+      <div class="choice-list">
+        <label class="choice-item" for="q{{ q.id }}_yes">
+          <input type="radio" name="question_{{ q.id }}" id="q{{ q.id }}_yes" value="Yes" />
+          <span>Yes</span>
+        </label>
+        <label class="choice-item" for="q{{ q.id }}_no">
+          <input type="radio" name="question_{{ q.id }}" id="q{{ q.id }}_no" value="No" />
+          <span>No</span>
+        </label>
+      </div>
+    {% elif q.type == "multiple_choice" and q.options %}
+      <div class="choice-list">
+        {% for opt in q.options %}
+        <label class="choice-item" for="q{{ q.id }}_opt{{ loop.index }}">
+          <input
+            type="radio"
+            name="question_{{ q.id }}"
+            id="q{{ q.id }}_opt{{ loop.index }}"
+            value="{{ opt }}"
+          />
+          <span>{{ opt }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <textarea
+        name="question_{{ q.id }}"
+        class="input-field"
+        rows="4"
+        placeholder="Your answer..."
+      ></textarea>
+    {% endif %}
+
+    {% if q.allows_for_audio %}
+    <div class="audio-recorder" data-qid="{{ q.id }}">
+      <div class="audio-controls">
+        <button type="button" class="btn-outline btn-sm record-btn" data-qid="{{ q.id }}">Record</button>
+        <button type="button" class="btn-danger btn-sm stop-btn hidden" data-qid="{{ q.id }}">Stop</button>
+        <span class="muted help-text status-text" data-qid="{{ q.id }}"></span>
+      </div>
+      <audio class="playback-audio hidden" data-qid="{{ q.id }}" controls></audio>
+      <input
+        type="file"
+        name="audio_{{ q.id }}"
+        id="audio_file_{{ q.id }}"
+        accept="audio/*"
+        class="hidden"
+      />
+    </div>
+    {% endif %}
+  </section>
+  {% else %}
+  <section class="card card-pad">
+    <p class="muted">No active questions at this time.</p>
+  </section>
+  {% endfor %}
+
+  {% if questions %}
+  <div class="submit-row">
+    <button type="submit" class="btn-primary">Submit</button>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  const recorders = {};
+  const chunks = {};
+  const streams = {};
+  const mediaRecorderAvailable = typeof MediaRecorder !== 'undefined';
+
+  document.querySelectorAll('.audio-recorder').forEach(widget => {
+    const qid = widget.dataset.qid;
+    const recordBtn = widget.querySelector('.record-btn');
+    const stopBtn = widget.querySelector('.stop-btn');
+    const statusText = widget.querySelector('.status-text');
+    const playback = widget.querySelector('.playback-audio');
+    const fileInput = document.getElementById(`audio_file_${qid}`);
+
+    if (!mediaRecorderAvailable) {
+      recordBtn.classList.add('hidden');
+      statusText.textContent = 'Audio recording is not supported in this browser.';
+      return;
+    }
+
+    recordBtn.addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streams[qid] = stream;
+        chunks[qid] = [];
+
+        const recorder = new MediaRecorder(stream);
+        recorders[qid] = recorder;
+
+        recorder.ondataavailable = e => {
+          if (e.data.size > 0) chunks[qid].push(e.data);
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks[qid], { type: 'audio/webm' });
+          const url = URL.createObjectURL(blob);
+
+          playback.src = url;
+          playback.classList.remove('hidden');
+
+          const dt = new DataTransfer();
+          const file = new File([blob], `audio_${qid}.webm`, { type: 'audio/webm' });
+          dt.items.add(file);
+          fileInput.files = dt.files;
+
+          statusText.textContent = 'Recording saved.';
+          streams[qid]?.getTracks().forEach(t => t.stop());
+        };
+
+        recorder.start();
+        recordBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+        statusText.textContent = 'Recording...';
+      } catch (err) {
+        statusText.textContent = 'Microphone access denied.';
+        console.error(err);
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      recorders[qid]?.stop();
+      stopBtn.classList.add('hidden');
+      recordBtn.classList.remove('hidden');
+    });
+  });
+})();
+</script>
+{% endblock %}
